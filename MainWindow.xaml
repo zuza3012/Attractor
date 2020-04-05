@@ -5,10 +5,39 @@
         xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="600" Width="1024">
     <Grid>
+        <Menu Height="25" VerticalAlignment="Top" Grid.ColumnSpan="2">
+            <MenuItem  Header="File" Margin="2,0,0,0">
+                <MenuItem x:Name="saveItem" Header="Save Graph" ></MenuItem>
+            </MenuItem>
+        </Menu>
+        <DockPanel Margin="0,0,0,500">
+            <RadioButton x:Name="lorentzBtn" Content="Lorentz" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="50,30,0,0" IsChecked="True"/>
+            <RadioButton x:Name="jongBtn" Content="De Jong" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="50,30,0,0" IsChecked="True"/>
+            <RadioButton x:Name="rooslerBtn" Content="Rössler" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="50,30,0,0" IsChecked="True"/>
+            <RadioButton x:Name="standardBtn" Content="Standard" HorizontalAlignment="Left"  VerticalAlignment="Top" Margin="50,30,0,0" IsChecked="True"/>
+            <Button Content="Draw" HorizontalAlignment="Left" Margin="150,30,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
+        </DockPanel>
+        <Canvas x:Name="canvas" Margin="30,70,300,30" RenderTransformOrigin="0,0">
+            <Image x:Name="image1" Height="450" Canvas.Left="10" Canvas.Top="10" Width="668"/>
+        </Canvas>
+        <StackPanel Height="450" VerticalAlignment="Top" Margin="740,70,30,30">
+            <Label x:Name="labelA" Content="a:" Width="20"/>
+            <TextBox x:Name="tbA" Width="50" Text="{Binding Path=num, Mode=TwoWay}" Margin="0,0,0,0" TextWrapping="Wrap" BorderThickness="0"/>
+            <Slider x:Name="sliderA" Value="{Binding Path=num, Mode=TwoWay}" LargeChange="0.1" Minimum="-10" AutoToolTipPlacement="TopLeft"  Margin="0,0,0,30" TickPlacement="TopLeft" SmallChange="0.01" ValueChanged="SliderA_ValueChanged"/>
+            <Label Content="b:" Width="20"/>
+            <TextBox Width="50"  Margin="0,0,0,0" TextWrapping="Wrap" BorderThickness="0"/>
+            <Slider x:Name="sliderB"  LargeChange="0.1" Minimum="-10" TickFrequency="0" AutoToolTipPlacement="TopLeft" Margin="0,0,0,30"/>
+            <Label Content="c:" Width="20"/>
+            <Slider x:Name="sliderC" LargeChange="0.1" Minimum="-10" TickFrequency="0" AutoToolTipPlacement="TopLeft" Margin="0,0,0,30"/>
+            <Label Content="d:" Width="20"/>
+            <Slider x:Name="sliderD" LargeChange="0.1" Minimum="-10" TickFrequency="0" AutoToolTipPlacement="TopLeft" Margin="0,0,0,30"/>
+            
+        </StackPanel>
 
-        <Canvas x:Name="canvas" Width="800" Height="350" Margin="0,50,0,0" RenderTransformOrigin="0,0"/>
+
+
 
 
 
