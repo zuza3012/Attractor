@@ -1,81 +1,62 @@
 ﻿using DotNumerics.ODE;
 using System;
-using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Image = System.Windows.Controls.Image;
 
 namespace Lorentz_Attractor {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : INotifyPropertyChanged {
+    public partial class MainWindow : Window {
         public MainWindow() {
-            
-            DataContext = this;
             InitializeComponent();
         }
         private OdeExplicitRungeKutta45 odeRK = new OdeExplicitRungeKutta45();
         double[] yprime = new double[3];
         Random rand = new Random();
+        string xlabel = "x", ylabel = "y";
+        int counter = 0;
 
-        public event PropertyChangedEventHandler PropertyChanged; //interfejs
-        private float _num;
-        public float num {
-            get { return _num; }
-            set {
-                if(_num != value) {
-                    _num = (float)Math.Round(value,3);
-                    OnPropertyChanged();
-                }
-            }
-        }
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null) {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-        }
-        private void MakeAPlot(double[,] data, bool lorentz) {
+        private void MakeAPlot(double[,] data) {
             var plt = new ScottPlot.Plot(1000, 800);
             double[] x, y;
             int linewidth = 2, markersize = 0;
-            if (lorentz) {
+            if (lorentzBtn.IsChecked == true) {
                 double[] t = GetColumn(data, 0);
-                Console.WriteLine("t0:" + t[0]);
                 x = GetColumn(data, 1);
                 y = GetColumn(data, 3);
                 plt.Title("Lorentz Attractor");
+                plt.PlotScatter(x, y, markerSize: markersize, lineWidth: linewidth, color: System.Drawing.Color.Red);
 
-            } else {
+            } else if (jongBtn.IsChecked == true) {
                 x = GetColumn(data, 0);
                 y = GetColumn(data, 1);
-                Console.WriteLine("Length");
-                Console.WriteLine(x.Length);
-                Console.WriteLine(y.Length);
                 linewidth = 0;
                 markersize = 2;
                 plt.Title("De jong Attractor");
+                plt.PlotScatter(x, y, markerSize: markersize, lineWidth: linewidth, color: System.Drawing.Color.Red);
+            } else if (standardBtn.IsChecked == true) {
+                x = GetColumn(data, 0);
+                y = GetColumn(data, 1);
+                linewidth = 1;
+                markersize = 0;
+                plt.Title("Standard");
+                plt.PlotScatter(x, y, markerSize: markersize, lineWidth: linewidth, color: System.Drawing.Color.Red);
             }
 
-            plt.PlotScatter(x, y, markerSize: markersize, lineWidth: linewidth, color: System.Drawing.Color.Red, label: "x + y");
+
             plt.Legend();
 
-            
-            plt.YLabel("y");
-            plt.XLabel("x");
-
-           // Image image = new Image();
-
-            Console.WriteLine(plt.GetBitmap().Width);
-            Console.WriteLine(plt.GetBitmap().Height);
-
+            plt.XLabel(xlabel);
+            plt.YLabel(ylabel);
 
             image1.Source = CreateBitmapSourceFromGdiBitmap(plt.GetBitmap());
-            //canvas.Children.Add(image);
+
         }
         public double[] GetColumn(double[,] matrix, int columnNumber) {
             return Enumerable.Range(0, matrix.GetLength(0))
@@ -90,27 +71,13 @@ namespace Lorentz_Attractor {
             y0[2] = 1;
             odeRK.InitializeODEs(fun, 3);
             double[,] sol = odeRK.Solve(y0, 0, 0.003, 15);
-
-
-            for (int i = 0; i < sol.GetLength(0); i++) {
-                for (int j = 0; j < sol.GetLength(1); j++) {
-                    Console.Write(sol[i, j] + "\t");
-                }
-                Console.WriteLine();
-            }
-
-
-            Console.WriteLine("l0:" + sol.GetLength(0));
-            Console.WriteLine("l1:" + sol.GetLength(1));
             return sol;
-
         }
 
 
 
         private double[] ODEs(double t, double[] y) {
             double sigma = 10, r = 99.96, b = 10 / 3;
-
             yprime[0] = sigma * (y[1] - y[0]);
             yprime[1] = -y[0] * y[2] + r * y[0] - y[1];
             yprime[2] = y[0] * y[1] - b * y[2];
@@ -120,35 +87,32 @@ namespace Lorentz_Attractor {
         private double[,] JongCalculate(double a, double b, double c, double d) {
             double x0 = rand.NextDouble();
             double y0 = rand.NextDouble();
-            Console.WriteLine("losowanie: " + x0 + " " + y0);
 
             double[,] data = new double[50001, 2];
             data[0, 0] = 1;
             data[0, 1] = 1;
-            Console.WriteLine("Jong");
-            int[,] array2D = new int[,] { { 1, 2 }, { 3, 4 }, { 5, 6 }, { 7, 8 } };
-            Console.WriteLine("test:" + array2D.GetLength(0));
-            Console.WriteLine("test:" + array2D.GetLength(1));
 
             for (int i = 1; i < 50001; i++) {
                 data[i, 0] = Math.Sin(a * data[i - 1, 1]) - Math.Cos(b * data[i - 1, 0]);
                 data[i, 1] = Math.Sin(c * data[i - 1, 0]) - Math.Cos(d * data[i - 1, 1]);
             }
-
-            Console.WriteLine("test:" + data.GetLength(0));
-            Console.WriteLine("test:" + data.GetLength(1));
-
-
-            for (int i = 0; i < data.GetLength(1); i++) {
-                Console.Write(data[i, 0] + "\t" + data[i, 1]);
-
-                Console.WriteLine();
-            }
-
-
             return data;
         }
 
+        private double[,] Standard() {
+            double[,] data = new double[100, 2];
+            data[0, 0] = Convert.ToDouble(tbX.Text);
+            data[0, 1] = data[0, 0];
+            for (int i = 1; i < counter; i++) {
+                decimal fraction = (decimal)data[i - 1, 1];
+                decimal dPart = (2 * fraction) % 1.0m;
+
+                data[i, 1] = decimal.ToDouble(dPart);
+                data[i, 0] = data[i - 1, 1];
+            }
+
+            return data;
+        }
         public static BitmapSource CreateBitmapSourceFromGdiBitmap(Bitmap bitmap) {
             if (bitmap == null)
                 throw new ArgumentNullException("bitmap");
@@ -178,27 +142,74 @@ namespace Lorentz_Attractor {
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e) {
+        private void OnKeyDownHandler(object sender, KeyEventArgs e) {
+            if (standardBtn.IsChecked == true) {
+                counter++;
+                if (e.Key == Key.Return) {
+                    tbN.Clear();
+                    tbN.Text = Convert.ToString(counter);
+                    image1.Source = null;
+                    MakeAPlot(Standard());
+                }
+            }
+        }
+
+        private void Clear_Click(object sender, RoutedEventArgs e) {
+            counter = 0;
+            image1.Source = null;
+        }
+
+        private void RadioButton_Checked(object sender, RoutedEventArgs e) {
+
+            if(standardBtn.IsChecked == true) {
+                tbA.IsEnabled = false;
+                tbB.IsEnabled = false;
+                tbC.IsEnabled = false;
+                tbD.IsEnabled = false;
+
+                sliderA.IsEnabled = false;
+                sliderB.IsEnabled = false;
+                sliderC.IsEnabled = false;
+                sliderD.IsEnabled = false;
+
+                tbX.IsEnabled = true;
+                tbN.IsEnabled = true;
+            }else if(jongBtn.IsChecked == true) {
+                tbX.IsEnabled = false;
+                tbN.IsEnabled = false;
+
+                tbA.IsEnabled = true;
+                tbB.IsEnabled = true;
+                tbC.IsEnabled = true;
+                tbD.IsEnabled = true;
+
+                sliderA.IsEnabled = true;
+                sliderB.IsEnabled = true;
+                sliderC.IsEnabled = true;
+                sliderD.IsEnabled = true;
+            }
+            
+
+        }
+
+        private void Draw_Click(object sender, RoutedEventArgs e) {
             if (lorentzBtn.IsChecked == true) {
-                MakeAPlot(Solve(), true);
+                MakeAPlot(Solve());
             } else if (jongBtn.IsChecked == true) {
                 //MakeAPlot(JongCalculate(-2.7, -0.09, -0.86, -2.2), false);
                 // MakeAPlot(JongCalculate(-0.709, 1.638, 0.452, 1.740), false);
-                MakeAPlot(JongCalculate(sliderA.Value, sliderB.Value, sliderC.Value, sliderD.Value), false);
+                MakeAPlot(JongCalculate(sliderA.Value, sliderB.Value, sliderC.Value, sliderD.Value));
 
 
             } else if (rooslerBtn.IsChecked == true) {
 
             } else {
-
+                MakeAPlot(Standard());
             }
 
 
         }
 
-        private void SliderA_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
-            //abelA.Content = "a: " + sliderA.Value;
-            //Console.WriteLine(labelA.Content);
-        }
+
     }
 }
